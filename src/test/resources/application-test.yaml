@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${TEST_DB_URL:jdbc:h2:mem:coffee_order;MODE=MySQL;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=15000}
+    username: ${TEST_DB_USERNAME:sa}
+    password: ${TEST_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 12
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+logging:
+  level:
+    org.hibernate.SQL: warn

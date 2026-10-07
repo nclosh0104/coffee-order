@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+description = 'coffee-order'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    environment 'TEST_DB_URL', 'jdbc:h2:mem:coffee_order;MODE=MySQL;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=15000'
+    environment 'TEST_DB_USERNAME', 'sa'
+    environment 'TEST_DB_PASSWORD', ''
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.register('mysqlTest', Test) {
+    description = 'Runs the same integration tests against a dedicated MySQL test database.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    outputs.upToDateWhen { false }
+    doFirst {
+        def url = System.getenv('TEST_DB_URL')
+        def allowedUrls = [
+            'jdbc:mysql://localhost:3306/coffee_order_codex_test_20261007',
+            'jdbc:mysql://127.0.0.1:3306/coffee_order_codex_test_20261007'
+        ]
+        if (!allowedUrls.contains(url)) {
+            throw new GradleException('TEST_DB_URL must point to the dedicated local coffee_order_codex_test_20261007 database, without URL parameters.')
+        }
+    }
+}
